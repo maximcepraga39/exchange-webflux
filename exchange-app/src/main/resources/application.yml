@@ -3,7 +3,7 @@ server:
 
 spring:
   r2dbc:
-    url: r2dbc:postgresql://localhost:5432/exchange
+    url: r2dbc:postgresql://db:5432/exchange
     username: exchange_user
     password: exchange123
     properties:
