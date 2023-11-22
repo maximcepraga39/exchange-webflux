@@ -1,0 +1,28 @@
+plugins {
+    id 'java'
+    id "org.flywaydb.flyway" version "8.4.4"
+}
+
+group = 'md.orange.exchange'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    sourceCompatibility = '11'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    runtimeOnly 'org.postgresql:postgresql:42.3.8'
+}
+
+flyway {
+    driver = 'org.postgresql.Driver'
+    url = 'jdbc:postgresql://localhost:5432/exchange'
+    user = 'exchange_user'
+    password = 'exchange123'
+    schemas = ['exchange']
+    defaultSchema= 'exchange'
+}
