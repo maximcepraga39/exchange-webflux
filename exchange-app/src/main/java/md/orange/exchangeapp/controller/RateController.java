@@ -7,9 +7,13 @@ import md.orange.exchangeapp.exception.CurrencyNotFoundException;
 import md.orange.exchangeapp.service.CurrencyService;
 import md.orange.exchangeapp.service.RateService;
 import md.orange.exchangeapp.dto.ExchangeRateDto;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.time.LocalDate;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/rates")
@@ -29,23 +33,24 @@ public class RateController {
                     return Mono.just(cursValutar);
                 });
 
-        return rateService.saveCursValutar(cursValutarWithDictionarValute).map(this::convertToDto);
+        return cursValutarWithDictionarValute.flatMap(rateService::saveCursValutar).map(this::convertToDto);
     }
 
     @GetMapping("/all")
-    public Flux<ExchangeRateDto> getAllExchangeRate() {
-        return rateService.getCursValutar()
+    public Flux<ExchangeRateDto> getAllExchangeRate(@RequestParam(value = "date", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        var cursDate = Optional.ofNullable(date).orElse(LocalDate.now());
+        return rateService.getCursValutarByDate(cursDate)
                 .map(this::convertToDto);
     }
 
     @GetMapping
-    public Mono<ExchangeRateDto> getExchangeRateByCurrencyCode(@RequestParam("currencyCode") String currencyCode) {
-        return rateService.getCursValutarByCurrencyCode(currencyCode)
+    public Mono<ExchangeRateDto> getExchangeRateByCurrencyCode(@RequestParam("currencyCode") String currencyCode,
+                                                               @RequestParam(value = "date", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        var cursDate = Optional.ofNullable(date).orElse(LocalDate.now());
+        return rateService.getCursValutarByCurrencyCodeByDate(currencyCode, cursDate)
                 .switchIfEmpty(Mono.error(new CurrencyNotFoundException()))
                 .map(this::convertToDto);
     }
-
-
 
     private ExchangeRateDto convertToDto(CursValutarWithDictionarValute cursValutarWithDictionarValute) {
         var exchangeRateDto = new ExchangeRateDto();
@@ -56,6 +61,7 @@ public class RateController {
         exchangeRateDto.setCodValuta(dictionarValute.getCodValuta());
         exchangeRateDto.setRata(1d);
         exchangeRateDto.setCurs(cursValutar.getCurs());
+        exchangeRateDto.setDataCurs(cursValutar.getDataCurs());
 
         return exchangeRateDto;
     }
@@ -64,6 +70,7 @@ public class RateController {
         var cursValutar = new CursValutar();
 
         cursValutar.setCurs(normalizeCurs(exchangeRateDto.getCurs(), exchangeRateDto.getRata()));
+        cursValutar.setDataCurs(exchangeRateDto.getDataCurs());
         return cursValutar;
     }
 

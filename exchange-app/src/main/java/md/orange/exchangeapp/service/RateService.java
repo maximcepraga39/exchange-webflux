@@ -9,14 +9,16 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDate;
+
 @Service
 @RequiredArgsConstructor
 public class RateService {
     private final CursValutarRepository cursValutarRepository;
     private final DictionarValuteRepository dictionarValuteRepository;
 
-    public Mono<CursValutarWithDictionarValute> saveCursValutar(Mono<CursValutar> cursValutar) {
-        return cursValutar.flatMap(cursValutarRepository::save)
+    public Mono<CursValutarWithDictionarValute> saveCursValutar(CursValutar cursValutar) {
+        return cursValutarRepository.save(cursValutar)
                 .flatMap(savedCursValutar -> dictionarValuteRepository
                         .findById(savedCursValutar.getValutaId())
                         .map(dictionarValute -> {
@@ -28,20 +30,8 @@ public class RateService {
                         }));
     }
 
-    public Flux<CursValutarWithDictionarValute> getCursValutar() {
-//        return cursValutarRepository.findAll()
-//                .flatMap(cursValutar -> {
-//                    var dictionarValute = dictionarValuteRepository
-//                            .findById(cursValutar.getValutaId())
-//                            .block();
-//
-//                    var cursValutarWithDictionarValute = new CursValutarWithDictionarValute();
-//                    cursValutarWithDictionarValute.setCursValutar(cursValutar);
-//                    cursValutarWithDictionarValute.setDictionarValute(dictionarValute);
-//
-//                    return cursValutarWithDictionarValute;
-//                });
-        return cursValutarRepository.findAll()
+    public Flux<CursValutarWithDictionarValute> getCursValutarByDate(LocalDate date) {
+        return cursValutarRepository.findAllByDataCurs(date)
                 .flatMap(cursValutar -> dictionarValuteRepository
                         .findById(cursValutar.getValutaId())
                         .map(dictionarValute -> {
@@ -53,8 +43,13 @@ public class RateService {
                         }));
     }
 
-    public Mono<CursValutarWithDictionarValute> getCursValutarByCurrencyCode(String currencyCode) {
-        return cursValutarRepository.findByCodValuta(currencyCode)
+    public Mono<CursValutarWithDictionarValute> getCursValutarByCurrencyCodeForToday(String currencyCode) {
+        return getCursValutarByCurrencyCodeByDate(currencyCode, LocalDate.now());
+    }
+
+
+    public Mono<CursValutarWithDictionarValute> getCursValutarByCurrencyCodeByDate(String currencyCode, LocalDate date) {
+        return cursValutarRepository.findByCodValutaAndDataCurs(currencyCode, date)
                 .flatMap(cursValutar -> dictionarValuteRepository
                         .findById(cursValutar.getValutaId())
                         .map(dictionarValute -> {

@@ -8,9 +8,3 @@ spring:
     password: exchange123
     properties:
       schema: exchange
-
-#  datasource:
-#    driver-class-name: org.postgresql.Driver
-#    url: jdbc:postgresql://localhost:5432/exchange
-#    username: exchange_user
-#    password: exchange123

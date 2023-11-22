@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 public class Angajati {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private Integer id;
+    private Long id;
     @Column(name = "nume")
     private String nume;
     @Column(name = "prenume")

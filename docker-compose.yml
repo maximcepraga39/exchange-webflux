@@ -9,7 +9,25 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
     restart: always
+    networks:
+      - default
     ports:
       - '5432:5432'
     volumes:
       - /var/lib/postgresql/data
+  exchange-app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: ExchangeApp
+    restart: always
+    networks:
+      - default
+    ports:
+      - '8080:8080'
+    depends_on:
+      - db
+
+networks:
+  default:
+    driver: bridge

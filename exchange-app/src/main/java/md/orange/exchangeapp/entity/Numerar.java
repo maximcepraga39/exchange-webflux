@@ -1,23 +1,23 @@
 package md.orange.exchangeapp.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Numerar {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private Integer id;
-    private Integer valutaId;
+    private Long id;
+    private Long valutaId;
     private String utilizator;
     private Double suma;
-    private LocalDateTime data;
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private LocalDate data = LocalDate.now();
 }

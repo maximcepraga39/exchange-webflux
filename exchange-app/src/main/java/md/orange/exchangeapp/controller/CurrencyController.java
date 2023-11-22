@@ -15,14 +15,26 @@ public class CurrencyController {
     private final CurrencyService currencyService;
 
     @PostMapping
-    public Mono<CurrencyDto> saveDictionarValute(@RequestBody CurrencyDto currencyDto) {
-        return currencyService.saveDictionarValute(convertToEntity(currencyDto))
+    public Mono<CurrencyDto> addCurrency(@RequestBody CurrencyDto currencyDto) {
+        return currencyService.addCurrency(convertToEntity(currencyDto))
+                .map(this::convertToDto);
+    }
+
+    @GetMapping("/all")
+    public Flux<CurrencyDto> getAllCurrencies() {
+        return currencyService.getAllCurrencies()
                 .map(this::convertToDto);
     }
 
     @GetMapping
-    public Flux<CurrencyDto> getAllCurrencies() {
-        return currencyService.getAllCurrencies()
+    public Mono<CurrencyDto> getCurrencyByCurrencyCode(@RequestParam("currencyCode") String currencyCode) {
+        return currencyService.getCurrencyByCurrencyCode(currencyCode)
+                .map(this::convertToDto);
+    }
+
+    @DeleteMapping
+    public Mono<CurrencyDto> deleteCurrency(@RequestParam("currencyCode") String currencyCode) {
+        return currencyService.deleteCurrency(currencyCode)
                 .map(this::convertToDto);
     }
 

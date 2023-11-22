@@ -13,4 +13,9 @@ public class GlobalExceptionHandler {
     public Mono<ResponseEntity<String>> handleCurrencyNotFoundException(CurrencyNotFoundException e) {
         return Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage()));
     }
+
+    @ExceptionHandler(NotEnoughMoneyException.class)
+    public Mono<ResponseEntity<String>> handleNotEnoughMoney(NotEnoughMoneyException e) {
+        return Mono.just(ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(e.getMessage()));
+    }
 }

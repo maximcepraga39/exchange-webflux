@@ -5,8 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.persistence.*;
-import java.time.LocalDateTime;
+import javax.persistence.Id;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -14,11 +14,11 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class SchimbValutar {
     @Id
-    private Integer id;
-    private Integer valutaId;
-    private Double cursSchimb;
+    private Long id;
+    private Long valutaId;
+    private Long cursValutarId;
     private Double sumaPrimita;
     private Double sumaEliberata;
     private String utilizator;
-    private LocalDateTime data;
+    private LocalDate data_schimb = LocalDate.now();
 }

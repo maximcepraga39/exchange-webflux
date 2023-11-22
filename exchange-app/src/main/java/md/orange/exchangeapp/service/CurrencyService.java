@@ -12,7 +12,7 @@ import reactor.core.publisher.Mono;
 public class CurrencyService {
     private final DictionarValuteRepository dictionarValuteRepository;
 
-    public Mono<DictionarValute> saveDictionarValute(DictionarValute dictionarValute) {
+    public Mono<DictionarValute> addCurrency(DictionarValute dictionarValute) {
         return dictionarValuteRepository.save(dictionarValute);
     }
 
@@ -23,5 +23,13 @@ public class CurrencyService {
     public Mono<DictionarValute> getCurrencyByCurrencyCode(String currencyCode) {
         return dictionarValuteRepository
                 .findByCodValuta(currencyCode);
+    }
+
+    public Mono<DictionarValute> getCurrencyById(Long id) {
+        return dictionarValuteRepository.findById(id);
+    }
+
+    public Mono<DictionarValute> deleteCurrency(String currencyCode) {
+        return dictionarValuteRepository.deleteByCodValuta(currencyCode);
     }
 }
