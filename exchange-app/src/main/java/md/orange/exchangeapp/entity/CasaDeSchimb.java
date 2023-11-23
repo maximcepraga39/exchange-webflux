@@ -10,10 +10,12 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CursValutar {
+public class CasaDeSchimb {
     @Id
     private Long id;
-    private Long valutaId;
-    private Double curs;
-    private LocalDate dataCurs = LocalDate.now();
+    private String nume;
+    private String adresa;
+    private String telefon;
+    private String email;
+    private LocalDate dataInfiintare;
 }

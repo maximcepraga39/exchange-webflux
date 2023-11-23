@@ -3,11 +3,11 @@ package md.orange.exchangeapp.controller;
 import lombok.RequiredArgsConstructor;
 import md.orange.exchangeapp.dto.CashRqDto;
 import md.orange.exchangeapp.dto.CashRsDto;
-import md.orange.exchangeapp.dto.DeleteCacheRqDto;
-import md.orange.exchangeapp.entity.DictionarValute;
 import md.orange.exchangeapp.entity.Numerar;
-import md.orange.exchangeapp.entity.NumerarWithDictionarValute;
+import md.orange.exchangeapp.entity.NumerarWithDictionarValuteAndCasaDeSchimb;
+import md.orange.exchangeapp.exception.CasaDeSchimbNotFoundException;
 import md.orange.exchangeapp.exception.CurrencyNotFoundException;
+import md.orange.exchangeapp.repository.CasaDeSchimbRepository;
 import md.orange.exchangeapp.service.CashService;
 import md.orange.exchangeapp.service.CurrencyService;
 import org.springframework.web.bind.annotation.*;
@@ -20,6 +20,7 @@ import reactor.core.publisher.Mono;
 public class CashController {
     private final CashService cashService;
     private final CurrencyService currencyService;
+    private final CasaDeSchimbRepository casaDeSchimbRepository;
 
     @GetMapping("/all")
     public Flux<CashRsDto> getAllCash() {
@@ -27,39 +28,50 @@ public class CashController {
     }
 
     @GetMapping
-    public Mono<CashRsDto> getCashByCurrencyCode(@RequestParam("currencyCode") String currencyCode) {
-        return cashService.getCashByCurrencyCode(currencyCode).map(this::convertToDto);
+    public Mono<CashRsDto> getCashByCurrencyCode(@RequestParam("currencyCode") String currencyCode, @RequestParam("numeCasaDeSchimb") String numeCasaDeSchimb) {
+        return cashService.getCashByCurrencyCodeAndCasaDeSchimb(currencyCode, numeCasaDeSchimb)
+                .map(this::convertToDto);
     }
 
     @PostMapping
     public Mono<CashRsDto> addCash(@RequestBody CashRqDto cashRequest) {
         var numerar = convertToEntity(cashRequest);
-        var cursValutarWithDictionarValute = currencyService.getCurrencyByCurrencyCode(cashRequest.getCodValuta())
+        var cursValutarWithDictionarValuteAndCasaDeSchimb = currencyService.getCurrencyByCurrencyCode(cashRequest.getCodValuta())
                 .switchIfEmpty(Mono.error(new CurrencyNotFoundException()))
                 .flatMap(dictionarValute -> {
                     numerar.setValutaId(dictionarValute.getId());
 
                     return Mono.just(numerar);
-                });
-        return cursValutarWithDictionarValute.flatMap(cashService::addCash).map(this::convertToDto);
+                })
+                .flatMap(savedNumerar -> casaDeSchimbRepository.findByNume(cashRequest.getNumeCasaDeSchimb())
+                        .switchIfEmpty(Mono.error(new CasaDeSchimbNotFoundException(cashRequest.getNumeCasaDeSchimb())))
+                        .map(casaDeSchimb -> {
+                            savedNumerar.setCasaDeSchimbId(casaDeSchimb.getId());
+                            return savedNumerar;
+                        }));
+
+        return cursValutarWithDictionarValuteAndCasaDeSchimb.flatMap(cashService::addCash).map(this::convertToDto);
     }
 
     @PutMapping
-    public Mono<CashRsDto> updateCash(@RequestBody CashRqDto cashRequest) {
-        return cashService.updateCash(cashRequest).map(this::convertToDto);
+    public Mono<Integer> updateCash(@RequestBody CashRqDto cashRequest) {
+        return cashService.updateCash(cashRequest);
     }
 
     @DeleteMapping
-    public Mono<CashRsDto> deleteCash(@RequestParam String codValuta) {
-        return cashService.deleteCash(codValuta).map(this::convertToDto);
+    public Mono<Integer> deleteCash(@RequestParam("codValuta") String codValuta, @RequestParam("numeCasaDeSchimb") String numeCasaDeSchimb) {
+        return cashService.deleteCash(codValuta, numeCasaDeSchimb);
     }
 
-    private CashRsDto convertToDto(NumerarWithDictionarValute numerarWithDictionarValute) {
+    private CashRsDto convertToDto(NumerarWithDictionarValuteAndCasaDeSchimb numerarWithDictionarValuteAndCasaDeSchimb) {
         var cashRsDto = new CashRsDto();
-        var numerar = numerarWithDictionarValute.getNumerar();
-        var dictionarValute = numerarWithDictionarValute.getDictionarValute();
+        var numerar = numerarWithDictionarValuteAndCasaDeSchimb.getNumerar();
+        var dictionarValute = numerarWithDictionarValuteAndCasaDeSchimb.getDictionarValute();
+        var casaDeSchimb = numerarWithDictionarValuteAndCasaDeSchimb.getCasaDeSchimb();
         cashRsDto.setCodValuta(dictionarValute.getCodValuta());
         cashRsDto.setSuma(numerar.getSuma());
+        cashRsDto.setNumeCasaDeSchimb(casaDeSchimb.getNume());
+        cashRsDto.setAdresaCasaDeSchimb(casaDeSchimb.getAdresa());
         return cashRsDto;
     }
     private Numerar convertToEntity(CashRqDto cashRequest) {

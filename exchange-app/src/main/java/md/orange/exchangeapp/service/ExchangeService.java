@@ -12,7 +12,10 @@ import md.orange.exchangeapp.repository.NumerarRepository;
 import md.orange.exchangeapp.repository.SchimbValutarRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.time.LocalDate;
 
 @Service
 @RequiredArgsConstructor
@@ -25,14 +28,14 @@ public class ExchangeService {
 
     @Transactional
     public Mono<ExchangeRsDto> exchange(ExchangeRqDto exchangeRequest) {
-        return numerarRepository.findByCodValuta(exchangeRequest.getCodValuta())
+        return numerarRepository.findByCodValutaAndNumeCasaDeSchimb(exchangeRequest.getCodValuta(), exchangeRequest.getNumeCasaDeSchimb())
                 .filter(numerar -> numerar.getSuma() >= exchangeRequest.getSuma())
                 .switchIfEmpty(Mono.error(new NotEnoughMoneyException()))
                 .flatMap(numerar -> {
                     numerar.setSuma(numerar.getSuma() - exchangeRequest.getSuma());
                     return numerarRepository.updateNumerarById(numerar.getId(), numerar.getSuma());
                 })
-                .then(numerarRepository.findByCodValuta(CurrencyCode.MDL.name())
+                .then(numerarRepository.findByCodValutaAndNumeCasaDeSchimb(CurrencyCode.MDL.name(), exchangeRequest.getNumeCasaDeSchimb())
                         .switchIfEmpty(Mono.error(new CurrencyNotFoundException(CurrencyCode.MDL.name())))
                         .flatMap(numerar -> rateService.getCursValutarByCurrencyCodeForToday(exchangeRequest.getCodValuta())
                                 .flatMap(cursValutarWithDictionarValute -> {
@@ -59,5 +62,9 @@ public class ExchangeService {
                         .sumaEliberata(schimbValutar.getSumaEliberata())
                         .utilizator(exchangeRequest.getUtilizator())
                         .build());
+    }
+
+    public Flux<SchimbValutar> getExchangesForDate(LocalDate date) {
+        return schimbValutarRepository.findAllByDataSchimb(date);
     }
 }

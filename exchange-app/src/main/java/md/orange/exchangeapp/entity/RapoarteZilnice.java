@@ -10,10 +10,13 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CursValutar {
+public class RapoarteZilnice {
     @Id
     private Long id;
+    private Long casaDeSchimbId;
     private Long valutaId;
-    private Double curs;
-    private LocalDate dataCurs = LocalDate.now();
+    private Integer totalTranzactii;
+    private Double sumaPrimita;
+    private Double sumaEliberata;
+    private LocalDate dataRaport = LocalDate.now();
 }

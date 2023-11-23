@@ -13,9 +13,9 @@ import java.time.LocalDate;
 @Builder
 public class Numerar {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
     private Long valutaId;
+    private Long casaDeSchimbId;
     private String utilizator;
     private Double suma;
     @DateTimeFormat(pattern = "yyyy-MM-dd")

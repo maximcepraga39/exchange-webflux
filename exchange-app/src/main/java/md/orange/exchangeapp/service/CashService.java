@@ -2,9 +2,9 @@ package md.orange.exchangeapp.service;
 
 import lombok.RequiredArgsConstructor;
 import md.orange.exchangeapp.dto.CashRqDto;
-import md.orange.exchangeapp.dto.DeleteCacheRqDto;
 import md.orange.exchangeapp.entity.Numerar;
-import md.orange.exchangeapp.entity.NumerarWithDictionarValute;
+import md.orange.exchangeapp.entity.NumerarWithDictionarValuteAndCasaDeSchimb;
+import md.orange.exchangeapp.repository.CasaDeSchimbRepository;
 import md.orange.exchangeapp.repository.NumerarRepository;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -17,40 +17,45 @@ import java.util.function.Function;
 public class CashService {
     private final NumerarRepository numerarRepository;
     private final CurrencyService currencyService;
+    private final CasaDeSchimbRepository casaDeSchimbRepository;
 
-    public Flux<NumerarWithDictionarValute> getAllCash() {
+    public Flux<NumerarWithDictionarValuteAndCasaDeSchimb> getAllCash() {
         return numerarRepository.findAll()
-                .flatMap(combineNumerarWithDictionarValute());
+                .flatMap(combineNumerarWithDictionarValuteAndCasaDeSchimb());
     }
 
-    public Mono<NumerarWithDictionarValute> getCashByCurrencyCode(String currencyCode) {
-        return numerarRepository.findByCodValuta(currencyCode)
-                .flatMap(combineNumerarWithDictionarValute());
+    public Mono<NumerarWithDictionarValuteAndCasaDeSchimb> getCashByCurrencyCodeAndCasaDeSchimb(String currencyCode, String numeCasaDeSchimb) {
+        return numerarRepository.findByCodValutaAndNumeCasaDeSchimb(currencyCode, numeCasaDeSchimb)
+                .flatMap(combineNumerarWithDictionarValuteAndCasaDeSchimb());
     }
 
 
-    public Mono<NumerarWithDictionarValute> addCash(Numerar numerar) {
+    public Mono<NumerarWithDictionarValuteAndCasaDeSchimb> addCash(Numerar numerar) {
         return numerarRepository.save(numerar)
-                .flatMap(combineNumerarWithDictionarValute());
+                .flatMap(combineNumerarWithDictionarValuteAndCasaDeSchimb());
     }
 
-    public Mono<NumerarWithDictionarValute> updateCash(CashRqDto cashRequest) {
-        return numerarRepository.updateNumerarByCodValuta(cashRequest.getCodValuta(), cashRequest.getSuma())
-                .flatMap(combineNumerarWithDictionarValute());
+    public Mono<Integer> updateCash(CashRqDto cashRequest) {
+        return numerarRepository.updateNumerarByCodValutaAndNumeCasaDeSchimb(cashRequest.getCodValuta(), cashRequest.getNumeCasaDeSchimb(), cashRequest.getSuma());
     }
 
-    public Mono<NumerarWithDictionarValute> deleteCash(String codValuta) {
-        return numerarRepository.deleteNumerarByCodValuta(codValuta)
-                .flatMap(combineNumerarWithDictionarValute());
+    public Mono<Integer> deleteCash(String codValuta, String numeCasaDeSchimb) {
+        return numerarRepository.deleteNumerarByCodValuta(codValuta, numeCasaDeSchimb);
     }
-    private Function<Numerar, Mono<? extends NumerarWithDictionarValute>> combineNumerarWithDictionarValute() {
+
+    private Function<Numerar, Mono<NumerarWithDictionarValuteAndCasaDeSchimb>> combineNumerarWithDictionarValuteAndCasaDeSchimb() {
         return savedNumerar -> currencyService.getCurrencyById(savedNumerar.getValutaId())
-                .map(dictionarValute -> {
-                    var numerarWithDictionarValute = new NumerarWithDictionarValute();
-                    numerarWithDictionarValute.setNumerar(savedNumerar);
-                    numerarWithDictionarValute.setDictionarValute(dictionarValute);
+                .flatMap(dictionarValute -> {
+                    var numerarWithDictionarValuteAndCasaDeSchimb = new NumerarWithDictionarValuteAndCasaDeSchimb();
+                    numerarWithDictionarValuteAndCasaDeSchimb.setNumerar(savedNumerar);
+                    numerarWithDictionarValuteAndCasaDeSchimb.setDictionarValute(dictionarValute);
 
-                    return numerarWithDictionarValute;
+                    return casaDeSchimbRepository.findById(savedNumerar.getCasaDeSchimbId())
+                            .map(casaDeSchimb -> {
+                                numerarWithDictionarValuteAndCasaDeSchimb.setCasaDeSchimb(casaDeSchimb);
+                                return numerarWithDictionarValuteAndCasaDeSchimb;
+                            });
                 });
     }
+
 }

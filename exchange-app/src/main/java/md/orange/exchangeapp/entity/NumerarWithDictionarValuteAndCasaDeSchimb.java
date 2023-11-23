@@ -1,15 +1,14 @@
 package md.orange.exchangeapp.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class NumerarWithDictionarValute {
+@Builder
+public class NumerarWithDictionarValuteAndCasaDeSchimb {
     private Numerar numerar;
     private DictionarValute dictionarValute;
+    private CasaDeSchimb casaDeSchimb;
 }

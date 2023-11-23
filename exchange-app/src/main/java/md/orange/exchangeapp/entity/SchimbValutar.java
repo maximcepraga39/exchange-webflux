@@ -1,9 +1,6 @@
 package md.orange.exchangeapp.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.Id;
 import java.time.LocalDate;
@@ -12,13 +9,15 @@ import java.time.LocalDate;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class SchimbValutar {
     @Id
     private Long id;
     private Long valutaId;
     private Long cursValutarId;
+    private Long casaDeSchimbId;
     private Double sumaPrimita;
     private Double sumaEliberata;
     private String utilizator;
-    private LocalDate data_schimb = LocalDate.now();
+    private LocalDate dataSchimb = LocalDate.now();
 }

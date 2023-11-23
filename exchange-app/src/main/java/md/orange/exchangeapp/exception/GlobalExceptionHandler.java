@@ -15,7 +15,12 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(NotEnoughMoneyException.class)
-    public Mono<ResponseEntity<String>> handleNotEnoughMoney(NotEnoughMoneyException e) {
+    public Mono<ResponseEntity<String>> handleNotEnoughMoneyException(NotEnoughMoneyException e) {
+        return Mono.just(ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(e.getMessage()));
+    }
+
+    @ExceptionHandler(CasaDeSchimbNotFoundException.class)
+    public Mono<ResponseEntity<String>> handleCasaDeSchimbNotFoundException(CasaDeSchimbNotFoundException e) {
         return Mono.just(ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(e.getMessage()));
     }
 }
