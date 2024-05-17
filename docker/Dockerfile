@@ -1,11 +1,11 @@
-FROM eclipse-temurin:11-jdk-alpine AS build
+FROM eclipse-temurin:11-jdk-jammy AS build
 
 COPY ../exchange-app/build/libs/exchange-app-0.0.1-SNAPSHOT.jar app.jar
 COPY ../exchange-app/build/resources/main/application.yml application.yml
 
 RUN mkdir -p target/dependency && (cd target/dependency; jar -xf /app.jar)
 
-FROM eclipse-temurin:11-jre-alpine
+FROM eclipse-temurin:11-jre-jammy
 
 ARG DEPENDENCY=/target/dependency
 COPY --from=build ${DEPENDENCY}/BOOT-INF/lib /app/lib
